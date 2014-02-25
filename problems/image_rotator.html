@@ -6,11 +6,46 @@
 	<style type="text/css">
 		#rotator {
 			width: 450px;
-			height: 300px;
+			height: 266px;
 			border: 1px solid black;
 			background: #aaa;
 			text-align: center;
+      overflow:hidden;
+      position: relative;
 		}
+
+    #rotator ul {
+      position: relative;
+      list-style-type: none;
+      margin: 0;
+      padding: 0;
+      width: 3000px;
+      -moz-transition: 1s;
+      -o-transition: 1s;
+      transition: 1s;
+    }
+
+    #rotator h4, #rotator p {
+      margin: 0;
+    }
+
+    #rotator li {
+      float: left;
+      position: relative;
+    }
+
+    .description {
+      -webkit-box-sizing: border-box;
+      -moz-box-sizing: border-box;
+      box-sizing: border-box;
+      padding: 4px 10px;
+      position: absolute;
+      bottom: 4px;
+      background-color: rgba(0,0,0,0.6);
+      width: 100%;
+    }
+
+
 	</style>
 </head>
 <body>
@@ -51,9 +86,101 @@
 	<hr/>
 
 	<div id="rotator">
-		Rotator Here
-	</div>
+    <ul>
+      <li>
+        <div class="description">
+          <h4>Katarina</h4>
+          <p>Fruitcake bonbon donut jelly-o brownie biscuit marzipan pie.</p>
+        </div>
+        <img src="../img/kat_1.jpg" /><br/>
+      </li>
+
+      <li>
+        <div class="description">
+          <h4>Red Card Katarina</h4>
+          <p>Cheesecake marzipan cupcake biscuit candy canes pudding.</p>
+        </div>
+        <img src="../img/kat_2.jpg" /><br/>
+      </li>
+
+      <li>
+        <div class="description">
+          <h4>Kitty Cat Katarina</h4>
+          <p>Applicake topping halvah lemon drops wypas cotton candy.</p>
+        </div>
+        <img src="../img/kat_3.jpg" /><br/>
+      </li>
+
+      <li>
+        <div class="description">
+          <h4>High Command Katarina</h4>
+          <p>Oat cake macaroon souffle cupcake chupa chups chocolate bar bear claw dragee lemon drops.</p>
+        </div>
+        <img src="../img/kat_4.jpg" /><br/>
+      </li>
+    </ul>
+  </div> <!-- /rotator -->
 </div>
 
+<script type="text/javascript">
+  // Simple object literal module pattern
+  var Riot = Riot || {};
+
+  Riot.Carousel = (function () {
+    var carousels = [];
+    var carousel = function carousel (config) {
+      // Ensure this is called with the new keyword
+      if (!(this instanceof carousel)) {
+        return new carousel(config);
+      }
+
+      var el, delay, timeout, width, position, itemList;
+
+      this.element = el = typeof config.element === 'string' ? document.getElementById(config.element) : config.element;
+      this.delay = delay = config.delay || 2000;
+
+
+      // Get item list
+      this.itemList = itemList = el.querySelector('ul');
+
+      // Find width of carousel item. We are assuming they are all the same
+      this.width = width = parseInt(getComputedStyle(itemList.querySelector('li')).width, 10);
+
+      // Get starting position, we will count first image as position 1
+      this.position = parseInt(getComputedStyle(itemList).left, 10)/width + 1;
+
+      // Get number of items
+      this.length = itemList.querySelectorAll('li').length;
+
+      timeout = setInterval((function (){
+            this.rotate();
+          }).bind(this), delay);
+    };
+
+    carousel.prototype.rotate = function () {
+      this.changePosition(this.position+1);
+    };
+
+    carousel.prototype.changePosition = function (newPosition) {
+      var styles = this.itemList.style,
+          translateValue;
+
+      if (newPosition > this.length)
+        newPosition = 1;
+
+      translateValue = (newPosition - 1) * this.width * -1;
+
+      styles.transform = styles.webkitTransform = styles.MozTransform = styles.msTransform = styles.OTransform = 'translate(' + translateValue + 'px)';
+      this.position = newPosition;
+    }
+
+    return carousel;
+  })();
+
+var imageRotator = new Riot.Carousel({
+  element: 'rotator',
+  delay: 5000
+});
+</script>
 </body>
 </html>
