@@ -40,7 +40,7 @@
       box-sizing: border-box;
       padding: 4px 10px;
       position: absolute;
-      bottom: 4px;
+      bottom: 3px;
       background-color: rgba(0,0,0,0.6);
       width: 100%;
     }
@@ -148,6 +148,7 @@
 
       // Get starting position, we will count first image as position 1
       this.position = parseInt(getComputedStyle(itemList).left, 10)/width + 1;
+      this.position = position = isNaN(this.position) ? 1 : this.position;
 
       // Get number of items
       this.length = itemList.querySelectorAll('li').length;
@@ -177,10 +178,21 @@
     return carousel;
   })();
 
-var imageRotator = new Riot.Carousel({
-  element: 'rotator',
-  delay: 5000
-});
+var imageRotator,
+    init = function (){
+      imageRotator = new Riot.Carousel({
+        element: 'rotator',
+        delay: 5000
+      });
+    };
+
+if (window.addEventListener) {
+  window.addEventListener('load', init, false);
+} else if (window.attachEvent) {
+  window.attachEvent('onload', init);
+}
+
+
 </script>
 </body>
 </html>
