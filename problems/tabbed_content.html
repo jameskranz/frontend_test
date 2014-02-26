@@ -17,6 +17,50 @@
 			border: 1px solid #CCCCCC;
 			vertical-align:middle; margin-bottom: 3px;
 		}
+
+
+    /* Tabs */
+    .tabs, .tab-content {
+      list-style-type: none;
+      margin: 0;
+      padding: 0;
+      background: white;
+    }
+
+    .tabs {
+      float: left;
+    }
+
+    .tab-content {
+      clear: both;
+      border: 1px solid black;
+    }
+
+    .tabs li {
+      display: block;
+      float: left;
+      margin: 0;
+    }
+
+    .tabs .active {
+      border: 2px solid black;
+      border-bottom: none;
+    }
+
+    .tabs li a {
+      border: 1px solid black;
+      display: inline-block;
+      color: black;
+      padding: 8px 15px;
+    }
+
+    .tab-content .show {
+      display: block;
+    }
+
+    .tab-content .hide {
+      display: none;
+    }
 	</style>
 </head>
 <body>
@@ -57,6 +101,195 @@
 				Cheesecake jelly beans ice cream lollipop sweet pastry. Chupa chups dessert cheesecake sesame snaps. Cookie ice cream candy canes pastry cake muffin. Icing chocolate sweet gummi bears powder oat cake oat cake lemon drops.
 			</p>
 		</div>
+
+    <section>
+
+      <ul class="tabs">
+        <li>
+          <a data-tab-for="tab1" href="#">Tab 1</a>
+        </li>
+        <li>
+          <a data-tab-for="tab2" href="#">Tab 2</a>
+        </li>
+        <li>
+          <a data-tab-for="tab3" href="#">Tab 3</a>
+        </li>
+      </ul>
+
+      <ul class="tab-content">
+        <li id="tab1">
+          <p>
+            Gingerbread muffin gummies gingerbread macaroon. Lollipop candy applicake toffee faworki. Bear claw topping jelly toffee toffee powder tiramisu candy chupa chups. Chupa chups dragee icing applicake chupa chups dessert. Croissant jelly faworki marzipan tootsie roll marshmallow. Marshmallow toffee sweet roll fruitcake.
+          </p>
+        </li>
+        <li id="tab2">
+          <p>
+            Chocolate faworki croissant brownie halvah macaroon gummi bears wypas. Chupa chups icing gummies pudding dessert carrot cake. Cupcake jelly beans sweet roll icing ice cream apple pie tootsie roll gummi bears marzipan. Brownie gummies chupa chups pie. Cupcake jujubes topping. 
+          </p>
+        </li>
+        <li id="tab3">
+          <p>
+            Cheesecake jelly beans ice cream lollipop sweet pastry. Chupa chups dessert cheesecake sesame snaps. Cookie ice cream candy canes pastry cake muffin. Icing chocolate sweet gummi bears powder oat cake oat cake lemon drops.
+          </p>
+        </li>
+      </ul>
+    </section>
 	</div>
+<script type="text/javascript">
+var Riot = Riot || {};
+
+Riot.Utilities = {};
+
+Riot.Utilities.addClass = function (el, classToAdd) {
+  var classes,
+      i;
+
+  el = typeof el === 'string' ? document.getElementById(el) : el;
+
+  classes = el.className ? el.className.split(' ') : [];
+
+  for (i = 0; i < classes.length; i++) {
+    if (classes[i] === classToAdd) {
+      return;
+    }
+  }
+
+  classes.push(classToAdd);
+  el.className = classes.join(' ');
+};
+
+Riot.Utilities.removeClass = function (el, classToRemove) {
+  el = typeof el === 'string' ? document.getElementById(el) : el;
+
+  el.className = el.className.replace(new RegExp('\\b'+classToRemove+'\\b'), '').replace(/\s\s/,' ');
+}
+
+Riot.Tabs = (function () {
+  var tabs = function tabConstructor (config) {
+    // Ensure 'new' is used for correct 'this' behavior
+    if (!this instanceof tabConstructor) {
+      return new tabConstructor(config);
+    }
+
+    var startIndex, container, tabs;
+
+    // Store config
+    this.config = config;
+
+    // Which to start showing
+    startIndex = config.startIndex || 0;
+
+    // normalize tabContainer config to a dom element
+    this.container = container = typeof config.tabContainer === 'string' ? document.getElementById(config.tabContainer) : config.tabContainer;
+
+    // Lets grab the tabs, we won't expose them though
+    // We will have to have private or priveleged methods for anyting
+    // that needs to use them.
+    tabs = container.querySelectorAll('li');
+
+
+    // expose this to potentially allow binding to new or
+    // additional elements post-init 
+    this.createListeners = function (target) {
+      var i, c,
+          triggers = [],
+          nodelist,
+          convertedNodelist,
+          length = tabs.length;
+
+      // TODO: enhance to allow overriding default bahavior
+      // of querying data selectors, as this would duplicate
+      // event listeners if we try to add tabs for this group
+      // after initialization.  This would utilize the target
+      // param of this method.
+
+      // We will only do the listeners for this tab group
+      for (i = 0; i < length; i++) {
+        nodelist = this.getTriggers(tabs[i].id);
+        convertedNodelist = [];
+
+        // Convert nodelist to array.  Would use Array.prototype.slice, but this is more 
+        // browser compatible
+        for (c = nodelist.length; c--; convertedNodelist.unshift(nodelist[c]));
+
+        triggers = triggers.concat(convertedNodelist);
+      }
+
+      length = triggers.length;
+
+      // Create click listeners
+      for (i = 0; i < length; i++) {
+        if (triggers[i].addEventListener) {
+          triggers[i].addEventListener('click', this.tabClicked.bind(this), false);
+        } else if (triggers[i].attachEvent) {
+          triggers[i].attachEvent('click', this.tabClicked.bind(this));
+        }
+      }
+    }
+
+    this.createListeners();
+
+    // Hide tabs
+    for (i = tabs.length; i--;) {
+      Riot.Utilities.addClass(tabs[i], config.hideClass);
+    }
+
+    this.showTab(tabs[startIndex].id);
+  };
+
+  tabs.prototype.getTriggers = function (tabId) {
+    return document.querySelectorAll('[data-tab-for='+tabId+']');
+  }
+
+  tabs.prototype.tabClicked = function (ev) {
+    var target = ev.target,
+        relatedTab = target.getAttribute('data-tab-for');
+
+    ev.preventDefault();
+
+    this.showTab(relatedTab);
+  }
+
+  tabs.prototype.showTab = function (tabId) {
+    var tabTriggers = this.getTriggers(tabId),
+        activeClass = this.config.activeClass,
+        showClass = this.config.showClass,
+        hideClass = this.config.hideClass,
+        activeTriggers = document.querySelectorAll('.' + activeClass),
+        currentTab = document.querySelector('.' + showClass),
+        newTab = document.getElementById(tabId),
+        i;
+
+    // Deactivate currently active triggers
+    for (i = activeTriggers.length; i--;) {
+      Riot.Utilities.removeClass(activeTriggers[i], activeClass);
+    }
+
+    // Set all triggers for this tab to be active
+    for (i = tabTriggers.length; i-- ;) {
+      Riot.Utilities.addClass(tabTriggers[i], activeClass);
+    }
+
+    // Hide currently shown
+    if (currentTab) {
+      Riot.Utilities.removeClass(currentTab, showClass);
+      Riot.Utilities.addClass(currentTab, hideClass);
+    }
+
+    // Show new tab
+    Riot.Utilities.removeClass(newTab, hideClass);
+    Riot.Utilities.addClass(newTab, showClass);
+  }
+
+  return tabs;
+})();
+
+var cheesecakeTabs = new Riot.Tabs({
+  tabContainer: document.querySelector('.tab-content'),
+  activeClass: 'active',
+  showClass: 'show',
+  hideClass: 'hide'
+});
+</script>
 </body>
 </html>
