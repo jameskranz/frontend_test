@@ -18,6 +18,10 @@
 			vertical-align:middle; margin-bottom: 3px;
 		}
 
+    section {
+      background-color: white;
+      padding: 5px;
+    }
 
     /* Tabs */
     .tabs, .tab-content {
@@ -34,6 +38,16 @@
     .tab-content {
       clear: both;
       border: 1px solid black;
+      color: black;
+    }
+
+    .tab-content li {
+      box-sizing: border-box;
+      padding: 10px;
+    }
+
+    .tab-content p {
+      margin: 0;
     }
 
     .tabs li {
@@ -52,6 +66,7 @@
       display: inline-block;
       color: black;
       padding: 8px 15px;
+      outline: none;
     }
 
     .tab-content .show {

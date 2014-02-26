@@ -80,14 +80,14 @@ Riot.TextSearch = (function () {
       // so we could wrap the correct areas with spans for highlighting.
       // We would just return the stripped version and use the locations
       // in parseResults
-      return text.innerText;
+      return text.innerText || text.textContent;
     }
 
     this.createListeners();
   };
 
   textSearch.prototype.search = function (ev) {
-    var searchTerm = ev.target.value,
+    var searchTerm = this.input.value,
         textToSearch,
         index,
         offset = 0,
@@ -116,8 +116,13 @@ Riot.TextSearch = (function () {
         resultsTextDisplay = resultsContainer.querySelector('.result-search'),
         resultsNumDisplay = resultsContainer.querySelector('.result-number');
 
-    resultsTextDisplay.innerText = results.query;
-    resultsNumDisplay.innerText = results.locations.length;
+    if (resultsNumDisplay.innerText) {
+      resultsNumDisplay.innerText = results.locations.length;
+      resultsTextDisplay.innerText = results.query;
+    } else if (resultsNumDisplay.textContent) {
+      resultsNumDisplay.textContent = results.locations.length;
+      resultsTextDisplay.textContent = results.query;
+    }
   }
 
   textSearch.prototype.createListeners = function () {
