@@ -32,8 +32,10 @@
 		<input type="submit" value="Search" />
 	</form>
 
-	<h3>Results</h3>
-	Found 0 occurances of the word "llama" in the below text.
+  <div data-results-for="search_input">
+    <h3>Results</h3>
+    Found <span class="result-number">0</span> occurances of the word "<span class="result-search">llama</span>" in the below text.
+  </div>
 
 	<hr/>
 
@@ -53,6 +55,93 @@
 		</p>
 	</div>
 </div>
+
+<script type="text/javascript">
+var Riot = Riot || {};
+
+// Will allow binding a text input with a specific area to search
+Riot.TextSearch = (function () {
+  // Inner text would allow for simple number of results, but I want to highlight results
+  var textSearch = function textSearchConstructor (config) {
+    // Force new
+    if (!this instanceof textSearchConstructor) {
+      return new textSearchConstructor(config);
+    }
+
+    var input,
+        text;
+
+    this.input = input = typeof config.input === 'string' ? document.getElementById(config.input) : config.input;
+    this.text = text = typeof config.text === 'string' ? document.getElementById(config.text) : config.text;
+
+    this.getSearchText = function () {
+      // This function exists so that we could potentially do highlighting
+      // We would manually strip the html tags and keep track of their position,
+      // so we could wrap the correct areas with spans for highlighting.
+      // We would just return the stripped version and use the locations
+      // in parseResults
+      return text.innerText;
+    }
+
+    this.createListeners();
+  };
+
+  textSearch.prototype.search = function (ev) {
+    var searchTerm = ev.target.value,
+        textToSearch,
+        index,
+        offset = 0,
+        results = {
+          query: searchTerm,
+          locations: []
+        };
+
+    if (searchTerm) {
+      textToSearch = this.getSearchText();
+
+      while ((index = textToSearch.indexOf(searchTerm)) != -1) {
+        results.locations.push({start: offset + index, end: offset + index + searchTerm.length});
+        offset += index + searchTerm.length;
+        textToSearch = textToSearch.slice(index + searchTerm.length);
+      }
+
+      this.parseResults(results);
+    }
+
+    ev.preventDefault();
+  }
+
+  textSearch.prototype.parseResults = function (results) {
+    var resultsContainer = document.querySelector('[data-results-for=' + this.input.id + ']'),
+        resultsTextDisplay = resultsContainer.querySelector('.result-search'),
+        resultsNumDisplay = resultsContainer.querySelector('.result-number');
+
+    resultsTextDisplay.innerText = results.query;
+    resultsNumDisplay.innerText = results.locations.length;
+  }
+
+  textSearch.prototype.createListeners = function () {
+    var input = this.input,
+        text = this.text;
+
+    if (input.addEventListener) {
+      input.addEventListener('keyup', this.search.bind(this), false);
+      input.parentNode.addEventListener('submit', this.search.bind(this), false);
+    } else if (input.attachEvent) {
+      input.attachEvent('keyup', this.search.bind(this));
+      input.parentNode.attachEvent('keyup', this.search.bind(this));
+    }
+
+  }
+
+  return textSearch;
+})();
+
+var testSearch = new Riot.TextSearch({
+  input: 'search_input',
+  text: 'search_text'
+});
+</script>
 
 </body>
 </html>
